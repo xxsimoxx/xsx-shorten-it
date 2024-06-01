@@ -2,3 +2,6 @@
 .gitattributes export-ignore
 devtools export-ignore
 .gitignore export-ignore
+vendor export-ignore
+composer.lock export-ignore
+composer.json export-ignore

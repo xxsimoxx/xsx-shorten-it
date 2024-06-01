@@ -25,6 +25,9 @@
 
 namespace XXSimoXX\ShortenIt;
 
+require_once 'vendor/autoload.php';
+use splitbrain\phpQRCode\QRCode;
+
 class ShortenIt {
 
 	private $options = false;
@@ -88,6 +91,7 @@ class ShortenIt {
 		add_action('load-'.$page, [$this, 'delete_action']);
 		add_action('load-'.$page, [$this, 'new_action']);
 		add_action('load-'.$page, [$this, 'zero_action']);
+		add_action('load-'.$page, [$this, 'qr_action']);
 	}
 
 	public function render_menu () {
@@ -101,6 +105,12 @@ class ShortenIt {
 		echo '<p>'.esc_html__('Bla bla bla.', 'xsx-short-it').'</p>';
 		echo '</div>';
 
+/*
+		if (isset($_GET['action']) && $_GET['action'] === 'qr' && check_admin_referer('qr', '_xsi') && isset($_REQUEST['path'])) {
+			$this->qr($_REQUEST['path']);
+			return;
+		}
+*/
 		echo '<div class="xsi xsi-keys">';
 
 		$this->load_options();
@@ -272,6 +282,36 @@ class ShortenIt {
 
 	}
 
+	public function qr_action() {
+
+		if (!isset($_GET['action'])) {
+			return;
+		}
+		if ($_GET['action'] !== 'qr') {
+			return;
+		}
+		if (!check_admin_referer('qr', '_xsi')) {
+			return;
+		}
+		if (!current_user_can('manage_options')) {
+			return;
+		}
+		if (!isset($_REQUEST['path'])) {
+			return;
+		}
+
+		$path = sanitize_text_field(wp_unslash($_REQUEST['path']));
+		$url = get_bloginfo('url').(str_starts_with($path, '/') ? '' : '/').$path;
+
+		$qr = QRCode::svg($url);
+		ob_start();
+		header('Content-type: image/svg+xml');
+		header('Content-Disposition: attachment; filename='.str_replace('/', '-', $path).'.svg');
+		header('Content-Length: '.strlen($qr));
+		echo $qr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+
+	}
+
 	public function maybe_redirect() {
 		if (defined('WP_CLI') && WP_CLI) {
 			return;
@@ -342,7 +382,7 @@ class ShortItListTable extends \WP_List_Table {
 			'delete' => '<a href="'.wp_nonce_url(add_query_arg(['action' => 'delete', 'path' => $item['path']]), 'delete', '_xsi').'">'.esc_html__('Delete', 'xsx-short-it').'</a>',
 			'reset' => '<a href="'.wp_nonce_url(add_query_arg(['action' => 'zero', 'path' => $item['path']]), 'zero', '_xsi').'">'.esc_html__('Reset count', 'xsx-short-it').'</a>',
 			'copy'   => '<a href="#" onclick="navigator.clipboard.writeText(\''.$url.'\')">'.esc_html__('Copy URL to clipboard', 'xsx-short-it').'</a>',
-
+			'qr' => '<a href="'.wp_nonce_url(add_query_arg(['action' => 'qr', 'path' => $item['path']]), 'qr', '_xsi').'">'.esc_html__('Download QR', 'xsx-short-it').'</a>',
 		];
 		$key = '<span class="row-title">'.$item['path'].'</span>';
 		return sprintf('%1$s %2$s', $key, $this->row_actions($actions));
