@@ -31,11 +31,13 @@ use splitbrain\phpQRCode\QRCode;
 class ShortenIt {
 
 	private $options = false;
+	private $screen  = '';
 	const SLUG       = 'xsx-shorten-it';
 
 	public function __construct() {
-		add_action('template_redirect',          [$this, 'maybe_redirect']);
-		add_action('admin_menu',                 [$this, 'create_settings_menu'], 100);
+		add_action('template_redirect',     [$this, 'maybe_redirect']);
+		add_action('admin_menu',            [$this, 'create_settings_menu'], 100);
+		add_action('admin_enqueue_scripts', [$this, 'scripts']);
 		register_uninstall_hook(__FILE__, [__CLASS__, 'uninstall']);
 	}
 
@@ -79,7 +81,7 @@ class ShortenIt {
 	}
 
 	public function create_settings_menu() {
-		$page = add_menu_page(
+		$this->screen = add_menu_page(
 			esc_html__('Shorten It', 'xsx-short-it'),
 			esc_html__('Shorten It', 'xsx-short-it'),
 			'manage_options',
@@ -88,10 +90,10 @@ class ShortenIt {
 			'dashicons-admin-links'
 		);
 
-		add_action('load-'.$page, [$this, 'delete_action']);
-		add_action('load-'.$page, [$this, 'new_action']);
-		add_action('load-'.$page, [$this, 'zero_action']);
-		add_action('load-'.$page, [$this, 'qr_action']);
+		add_action('load-'.$this->screen, [$this, 'delete_action']);
+		add_action('load-'.$this->screen, [$this, 'new_action']);
+		add_action('load-'.$this->screen, [$this, 'zero_action']);
+		add_action('load-'.$this->screen, [$this, 'qr_action']);
 	}
 
 	public function render_menu () {
@@ -142,6 +144,13 @@ class ShortenIt {
 
 		echo '</div>';
 
+	}
+
+	public function scripts($hook) {
+		if ($hook !== $this->screen) {
+			return;
+		}
+		wp_enqueue_script(self::SLUG.'-js', plugin_dir_url(__FILE__).'js/shorten-it-settings.js', [], '1.0.0');
 	}
 
 	private function add_notice($message, $failure = false) {
@@ -381,7 +390,7 @@ class ShortItListTable extends \WP_List_Table {
 		$actions = [
 			'delete' => '<a href="'.wp_nonce_url(add_query_arg(['action' => 'delete', 'path' => $item['path']]), 'delete', '_xsi').'">'.esc_html__('Delete', 'xsx-short-it').'</a>',
 			'reset' => '<a href="'.wp_nonce_url(add_query_arg(['action' => 'zero', 'path' => $item['path']]), 'zero', '_xsi').'">'.esc_html__('Reset count', 'xsx-short-it').'</a>',
-			'copy'   => '<a href="#" onclick="navigator.clipboard.writeText(\''.$url.'\')">'.esc_html__('Copy URL to clipboard', 'xsx-short-it').'</a>',
+			'copy'   => '<a href="#" onclick="xsi_copy(\''.$url.'\')">'.esc_html__('Copy URL to clipboard', 'xsx-short-it').'</a>',
 			'qr' => '<a href="'.wp_nonce_url(add_query_arg(['action' => 'qr', 'path' => $item['path']]), 'qr', '_xsi').'">'.esc_html__('Download QR', 'xsx-short-it').'</a>',
 		];
 		$key = '<span class="row-title">'.$item['path'].'</span>';
