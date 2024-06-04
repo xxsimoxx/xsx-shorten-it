@@ -76,46 +76,40 @@ class ShortenIt {
 		add_action('load-'.$this->screen, [$this, 'new_action']);
 		add_action('load-'.$this->screen, [$this, 'zero_action']);
 		add_action('load-'.$this->screen, [$this, 'qr_action']);
+		add_action('load-'.$this->screen, [$this, 'help']);
 	}
 
-public function get_web_page( $url )
-{
-    $options = array(
-        CURLOPT_RETURNTRANSFER => true,     // return web page
-        CURLOPT_HEADER         => true,    // return headers
-        CURLOPT_FOLLOWLOCATION => true,     // follow redirects
-        CURLOPT_ENCODING       => "",       // handle all encodings
-        CURLOPT_USERAGENT      => "spider", // who am i
-        CURLOPT_AUTOREFERER    => true,     // set referer on redirect
-        CURLOPT_CONNECTTIMEOUT => 120,      // timeout on connect
-        CURLOPT_TIMEOUT        => 120,      // timeout on response
-        CURLOPT_MAXREDIRS      => 10,       // stop after 10 redirects
-    );
+	public function help() {
+		$general_content = wp_kses(
+			__(
+				'<b>Path</b> is relative to your Classicpress installation.<br>
+				<b>Destination</b> is the destination URL that path redirects to.<br>
+				<b>Redirect code</b> is the HTTP code used to redirect user to destination.<br>
+				<b>Hits</b> stores the count of how many users clicked on the shortened URL (some misconfigured URLs can lead to an incorrect count).<br>
+				If you have posts or pages with the same URL of a short link, the redirect will anyway take place.',
+				'xsx-short-it'
+			),
+			[
+				'b'  => [],
+				'br' => [],
+			]
+		);
 
-    $ch      = curl_init( $url );
-    curl_setopt_array( $ch, $options );
-    $content = curl_exec( $ch );
-    $err     = curl_errno( $ch );
-
-    $errmsg  = curl_error( $ch );
-    var_dump($errmsg);
-    $header  = curl_getinfo( $ch );
-    curl_close( $ch );
-
-    //$header['errno']   = $err;
-   // $header['errmsg']  = $errmsg;
-    //$header['content'] = $content;
-    //print($header[0]);
-    //return $header;
-}
-
+		$screen = get_current_screen();
+		$screen->add_help_tab(
+			[
+				'id'	  => 'xsi_help_tab_general',
+				'title'	  => esc_html__('Usage', 'xsx-short-it'),
+				'content' => '<p>'.$general_content.'</p>',
+			]
+		);
+	}
 
 	public function render_menu () {
 
 		echo '<div class="wrap">';
 
 		$this->display_notices();
-$this->get_web_page('https://gieffeedizioni.it');
 		echo '<div class="xsi xsi-general">';
 		echo '<h1>'.esc_html__('Short It', 'xsx-short-it').'</h1>';
 		echo '<p>'.esc_html__('Create short link for your post, your affiliates or your social content.', 'xsx-short-it').'<br>';
@@ -353,7 +347,6 @@ $this->get_web_page('https://gieffeedizioni.it');
 		$this->save_options();
 
 		wp_redirect($this->options['paths'][$path]['dest'], (int) $this->options['paths'][$path]['code']); //phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect
-		// header('Location: '.$this->options['paths'][$path]['dest'], true, (int) $this->options['paths'][$path]['code']);
 		exit();
 	}
 
