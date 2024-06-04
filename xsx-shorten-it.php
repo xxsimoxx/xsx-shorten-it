@@ -7,7 +7,6 @@
  * Version: 1.0.0
  * Requires PHP: 7.4
  * Requires CP: 2.0
- * Update URI: https://directory.classicpress.net/wp-json/wp/v2/plugins?byslug=xsx-shorten-it
  * Author: Simone Fioravanti
  * Author URI: https://software.gieffeedizioni.it
  * Plugin URI: https://software.gieffeedizioni.it
