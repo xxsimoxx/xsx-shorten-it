@@ -165,10 +165,9 @@ class ShortenIt {
 		$other_notices = get_transient('xsx_short_it_notices');
 		$notice = $other_notices === false ? '' : $other_notices;
 		$failure_style = $failure ? 'notice-error' : 'notice-success';
-		$notice .= '<div class="notice '.$failure_style.' is-dismissible go-away-soon">';
+		$notice .= '<div class="notice '.$failure_style.' is-dismissible">';
 		$notice .= '    <p>'.wp_kses($message, ['br' => [], 'i' => [],]).'</p>';
 		$notice .= '</div>';
-		$notice .= '<script>jQuery(".go-away-soon").delay(3000).hide("slow", function() {});</script>';
 		set_transient('xsx_short_it_notices', $notice, \HOUR_IN_SECONDS);
 	}
 
