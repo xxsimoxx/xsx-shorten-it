@@ -102,8 +102,7 @@ class ShortenIt {
 			'https://www.facebook.com/cris.vardamak/videos/1327994840668572',
 			get_bloginfo('url').'/fbv',
 		);
-		$example_content = wp_kses($example_content, ['br'=>[], 'i'=>[]]);
-
+		$example_content = wp_kses($example_content, ['br' => [], 'i' => []]);
 
 		$screen = get_current_screen();
 		$screen->add_help_tab(
@@ -415,7 +414,7 @@ class ShortItListTable extends \WP_List_Table {
 
 	// For "path" column add row actions.
 	public function column_path($item) {
-		$url = get_bloginfo('url').(str_starts_with($item['path'], '/') ? '' : '/').$item['path'];
+		$url = esc_url_raw(get_bloginfo('url').(str_starts_with($item['path'], '/') ? '' : '/').$item['path']);
 		$actions = [
 			'delete' => '<a href="'.wp_nonce_url(add_query_arg(['action' => 'delete', 'path' => $item['path']]), 'delete', '_xsi').'">'.esc_html__('Delete', 'xsx-short-it').'</a>',
 			'edit'   => '<a href="#xsi-form" onclick="xsi_mod(\''.$item['path'].'\', \''.$item['dest'].'\', \''.$item['code'].'\');">'.esc_html__('Edit', 'xsx-short-it').'</a>',
