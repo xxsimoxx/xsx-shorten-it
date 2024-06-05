@@ -4,7 +4,7 @@
  * -----------------------------------------------------------------------------
  * Plugin Name: Shorten It
  * Description: Create short link for your posts, your affiliates or your social content.
- * Version: 1.0.0
+ * Version: 1.0.1
  * Requires PHP: 7.4
  * Requires CP: 2.0
  * Author: Simone Fioravanti
@@ -34,7 +34,7 @@ class ShortenIt {
 	const SLUG       = 'xsx-shorten-it';
 
 	public function __construct() {
-		add_action('template_redirect',     [$this, 'maybe_redirect']);
+		add_action('template_redirect',     [$this, 'maybe_redirect'], 0);
 		add_action('admin_menu',            [$this, 'create_settings_menu'], 100);
 		add_action('admin_enqueue_scripts', [$this, 'scripts']);
 		register_uninstall_hook(__FILE__, [__CLASS__, 'uninstall']);
@@ -94,12 +94,30 @@ class ShortenIt {
 			]
 		);
 
+		/* Translators: %1$s is the destination, %2$s is the concatenation of site URL and path. */
+		$example_content = sprintf (
+			__('Path: /fbv<br>
+			Destination: %1$s<br>
+			means that if you connect to <i>%2$s</i> you will be redirected to <i>%1$s</i>.', 'xsx-short-it'),
+			'https://www.facebook.com/cris.vardamak/videos/1327994840668572',
+			get_bloginfo('url').'/fbv',
+		);
+		$example_content = wp_kses($example_content, ['br'=>[], 'i'=>[]]);
+
+
 		$screen = get_current_screen();
 		$screen->add_help_tab(
 			[
 				'id'	  => 'xsi_help_tab_general',
 				'title'	  => esc_html__('Usage', 'xsx-short-it'),
 				'content' => '<p>'.$general_content.'</p>',
+			]
+		);
+		$screen->add_help_tab(
+			[
+				'id'	  => 'xsi_help_tab_example',
+				'title'	  => esc_html__('Example', 'xsx-short-it'),
+				'content' => '<p>'.$example_content.'</p>',
 			]
 		);
 	}
@@ -117,6 +135,7 @@ class ShortenIt {
 
 		echo '<div class="xsi xsi-keys">';
 		$this->load_options();
+
 		$ListTable = new ShortItListTable();
 		$ListTable->load_items($this->options['paths']);
 		$ListTable->prepare_items();
@@ -205,6 +224,17 @@ class ShortenIt {
 		if (!isset($_REQUEST['new_code']) || !in_array((int) $_REQUEST['new_code'], [301, 302, 307, 308])) {
 			$missing[] = esc_html__('valid redirect type', 'xsx-short-it');
 		}
+
+		$path = trim(sanitize_text_field(wp_unslash($_REQUEST['new_path'])), '/');
+		$dest = esc_url_raw(wp_unslash($_REQUEST['new_dest']));
+		$code = (int) sanitize_text_field(wp_unslash($_REQUEST['new_code']));
+
+		if ($dest !== wp_unslash($_REQUEST['new_dest'])) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$missing[] = esc_html__('valid destination', 'xsx-short-it');
+		}
+		if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+			$missing[] = esc_html__('valid path', 'xsx-short-it');
+		}
 		if ($missing !== []) {
 			$error = sprintf(esc_html__('Missing %s.', 'xsx-short-it'), implode(', ', $missing));
 			$this->add_notice($error, true);
@@ -212,10 +242,6 @@ class ShortenIt {
 			wp_safe_redirect($sendback);
 			exit;
 		}
-
-		$path = trim(sanitize_text_field(wp_unslash($_REQUEST['new_path'])), '/');
-		$dest = esc_url_raw(wp_unslash($_REQUEST['new_dest']));
-		$code = (int) sanitize_text_field(wp_unslash($_REQUEST['new_code']));
 
 		$this->load_options();
 
