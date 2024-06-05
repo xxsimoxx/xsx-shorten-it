@@ -131,7 +131,8 @@ class ShortenIt {
 		echo '<h1>'.esc_html__('Short It', 'xsx-short-it').'</h1>';
 		echo '<p>'.esc_html__('Create short link for your posts, your affiliates or your social content.', 'xsx-short-it').'<br>';
 		echo esc_html__('Generate QR codes that point to your links.', 'xsx-short-it').'</p>';
-		echo esc_html__('Keep track of how many times those links are used.', 'xsx-short-it').'</p></div>';
+		echo esc_html__('Keep track of how many times those links are used.', 'xsx-short-it').'</p>';
+		echo '<a href="#" onClick="xsi_help();">'.esc_html__('More instructions', 'xsx-short-it').'</a>.</p></div>';
 
 		echo '<div class="xsi xsi-keys">';
 		$this->load_options();

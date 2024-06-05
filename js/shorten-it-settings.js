@@ -21,3 +21,7 @@ function xsi_cancel() {
 	document.getElementById('new_code').value = 302;
 	location.hash = '';
 }
+
+function xsi_help() {
+	document.getElementById('contextual-help-link').click();
+}
