@@ -226,6 +226,7 @@ class ShortenIt {
 		}
 
 		$path = trim(sanitize_text_field(wp_unslash($_REQUEST['new_path'])), '/');
+
 		$dest = esc_url_raw(wp_unslash($_REQUEST['new_dest']));
 		$code = (int) sanitize_text_field(wp_unslash($_REQUEST['new_code']));
 
@@ -235,6 +236,7 @@ class ShortenIt {
 		if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
 			$missing[] = esc_html__('valid path', 'xsx-short-it');
 		}
+		$path = preg_replace('#[^A-Za-z0-9/\-\._]#', '', $path);
 		if ($missing !== []) {
 			$error = sprintf(esc_html__('Missing %s.', 'xsx-short-it'), implode(', ', $missing));
 			$this->add_notice($error, true);
