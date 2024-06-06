@@ -165,9 +165,9 @@ class ShortenIt {
 		wp_nonce_field('new', '_xsi');
 		echo '<table class="form-table"><tr><td>';
 		echo '<label for="new_path">'.esc_html__('Path: ', 'xsx-short-it').'</label></td>';
-		echo '<td><input type="text" size="60" maxlength="60" name="new_path" id="new_path"></input></td></tr>';
+		echo '<td><input type="text" size="90" maxlength="90" name="new_path" id="new_path"></input></td></tr>';
 		echo '<tr><td><label for="new_dest">'.esc_html__('Destination: ', 'xsx-short-it').'</label></td>';
-		echo '<td><input type="text" size="60" maxlength="60" name="new_dest" id="new_dest"></input></td></tr>';
+		echo '<td><input type="text" size="90" maxlength="90" name="new_dest" id="new_dest"></input></td></tr>';
 		echo '<tr><td><label for="new_code">'.esc_html__('Redirect type: ', 'xsx-short-it').'</label></td>';
 		echo '<td><select name="new_code" id="new_code">';
 		echo '	<option value="302">302 - Temporary</option>';
