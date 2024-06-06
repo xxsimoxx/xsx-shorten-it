@@ -23,3 +23,7 @@ If redirects are not working properly there may be a conflict with plugins using
 This hook is used often by SEO plugins to redirect non existing pages.
 Take a look at your SEO plugin's settings.
 
+## Screenshots
+![Shorten It screenshot](images/screenshot-1.jpg)
+
+
