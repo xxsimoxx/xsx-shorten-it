@@ -259,7 +259,7 @@ class ShortenIt {
 		if ($missing !== []) {
 			$error = sprintf(esc_html__('Missing %s.', 'xsx-short-it'), implode(', ', $missing));
 			$this->add_notice($error, true);
-			$sendback = remove_query_arg(['action', 'new_note', '_xuc'], wp_get_referer());
+			$sendback = remove_query_arg(['action', '_xuc'], wp_get_referer());
 			wp_safe_redirect($sendback);
 			exit;
 		}
@@ -277,7 +277,7 @@ class ShortenIt {
 		$this->save_options();
 		$this->add_notice(esc_html__('New short URL generated.', 'xsx-short-it'), false);
 
-		$sendback = remove_query_arg(['action', 'new_note', '_xuc'], wp_get_referer());
+		$sendback = remove_query_arg(['action', '_xuc'], wp_get_referer());
 		wp_safe_redirect($sendback);
 		exit;
 
