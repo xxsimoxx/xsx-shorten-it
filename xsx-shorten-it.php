@@ -266,10 +266,12 @@ class ShortenIt {
 
 		$this->load_options();
 
+		$save_count = array_key_exists($path, $this->options['paths']) ? $this->options['paths'][$path]['hits'] : 0;
+
 		$this->options['paths'][$path] = [
 				'dest'  => $dest,
 				'code' => $code,
-				'hits' => 0,
+				'hits' => $save_count,
 			];
 
 		$this->save_options();
