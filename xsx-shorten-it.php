@@ -81,7 +81,7 @@ class ShortenIt {
 	public function help() {
 		$general_content = wp_kses(
 			__(
-				'<b>Path</b> is relative to your Classicpress installation.<br>
+				'<b>Path</b> is relative to your ClassicPress installation.<br>
 				<b>Destination</b> is the destination URL that path redirects to.<br>
 				<b>Redirect code</b> is the HTTP code used to redirect user to destination.<br>
 				<b>Hits</b> stores the count of how many users clicked on the shortened URL (some misconfigured URLs can lead to an incorrect count).<br>
@@ -104,6 +104,19 @@ class ShortenIt {
 		);
 		$example_content = wp_kses($example_content, ['br' => [], 'i' => []]);
 
+		$conflicts_content = wp_kses(
+			__(
+				'If redirects are not working properly there may be a conflict with plugins using <code>template_redirect</code> hook.<br>
+				This hook is used often by SEO plugins to redirect non existing pages.<br>
+				Take a look at your SEO plugin\'s settings.',
+				'xsx-short-it'
+			),
+			[
+				'code'  => [],
+				'br' => [],
+			]
+		);
+
 		$screen = get_current_screen();
 		$screen->add_help_tab(
 			[
@@ -119,12 +132,18 @@ class ShortenIt {
 				'content' => '<p>'.$example_content.'</p>',
 			]
 		);
+		$screen->add_help_tab(
+			[
+				'id'	  => 'xsi_help_tab_seo',
+				'title'	  => esc_html__('Conflicts', 'xsx-short-it'),
+				'content' => '<p>'.$conflicts_content.'</p>',
+			]
+		);
 	}
 
 	public function render_menu () {
 
 		echo '<div class="wrap">';
-
 		$this->display_notices();
 		echo '<div class="xsi xsi-general">';
 		echo '<h1>'.esc_html__('Short It', 'xsx-short-it').'</h1>';

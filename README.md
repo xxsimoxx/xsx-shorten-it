@@ -17,4 +17,9 @@ Destination: https://www.facebook.com/cris.vardamak/videos/1327994840668572
 
 means that if you connect to *https://my-beautiful-domain.it/fbv* you will be redirected to *https://www.facebook.com/cris.vardamak/videos/1327994840668572*.
 
+## Conflicts
+
+If redirects are not working properly there may be a conflict with plugins using `template_redirect` hook.
+This hook is used often by SEO plugins to redirect non existing pages.
+Take a look at your SEO plugin's settings.
 
