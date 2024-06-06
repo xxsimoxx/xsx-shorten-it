@@ -15,7 +15,7 @@ Path: /fbv
 
 Destination: https://www.facebook.com/cris.vardamak/videos/1327994840668572
 
-means that if you connect to *https://my-beautiful-domain.it/fbv* you will be redirected to *https://www.facebook.com/cris.vardamak/videos/1327994840668572*.
+means that if you connect to *https://educatorecinofilo.dog/fbv* you will be redirected to *https://www.facebook.com/cris.vardamak/videos/1327994840668572*.
 
 ## Conflicts
 
