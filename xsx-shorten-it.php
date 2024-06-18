@@ -37,6 +37,7 @@ class ShortenIt {
 		add_action('template_redirect',     [$this, 'maybe_redirect'], 0);
 		add_action('admin_menu',            [$this, 'create_settings_menu'], 100);
 		add_action('admin_enqueue_scripts', [$this, 'scripts']);
+		add_action('admin_enqueue_scripts', [$this, 'styles']);
 		register_uninstall_hook(__FILE__, [__CLASS__, 'uninstall']);
 	}
 
@@ -188,7 +189,7 @@ class ShortenIt {
 		if ($hook !== $this->screen) {
 			return;
 		}
-		wp_enqueue_script(self::SLUG.'-js', plugin_dir_url(__FILE__).'js/shorten-it-settings.js', [], '1.0.0');
+		wp_enqueue_script(self::SLUG.'-js', plugin_dir_url(__FILE__).'js/shorten-it-settings.js', [], '1.0.0', false);
 		wp_localize_script(
 			self::SLUG.'-js',
 			'xsiWords',
@@ -197,6 +198,13 @@ class ShortenIt {
 				'edit' => esc_html__('Edit short link', 'xsx-short-it'),
 			]
 		);
+	}
+
+	public function styles($hook) {
+		if ($hook !== $this->screen) {
+			return;
+		}
+		wp_enqueue_style(self::SLUG.'-css', plugin_dir_url(__FILE__).'css/shorten-it-settings.css', [], '0.0.2');
 	}
 
 	private function add_notice($message, $failure = false) {
