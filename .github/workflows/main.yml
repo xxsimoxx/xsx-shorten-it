@@ -13,10 +13,15 @@ jobs:
         run: |
           git config user.name "GitHub Actions Bot"
           git config user.email "<>"
+      - name: Install dependencies
+        uses: php-actions/composer@v6
       - name: Create artifact
         run : |
-          git archive -o ${{ github.event.repository.name }}-${{ github.ref_name }}.zip --prefix ${{ github.event.repository.name }}/ HEAD 
+          rm -f .gitignore
+          stashName=`git stash create`;
+          echo "Stash: "$stashName
           ls
+          git archive -o ${{ github.event.repository.name }}-${{ github.ref_name }}.zip --prefix ${{ github.event.repository.name }}/ $stashname 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
