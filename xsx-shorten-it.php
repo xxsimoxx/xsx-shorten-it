@@ -180,7 +180,7 @@ class ShortenIt {
 		echo '<input type="button" class="button" onclick="xsi_cancel();" id="cancel_button" style="visibility: hidden;" value="'.esc_html__('Cancel', 'xsx-short-it').'"></input>';
 		echo '</form>';
 		echo '</div>';
-
+echo '<a href="#" class="link-txt">ciao</a>';
 		echo '</div>';
 
 	}
