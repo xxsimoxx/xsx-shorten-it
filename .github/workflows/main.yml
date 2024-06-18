@@ -19,7 +19,7 @@ jobs:
         run : |
           rm -f .gitignore
           git status
-          stashName=`git stash create`;
+          stashName=`git stash create --all`;
           echo "Stash: "$stashName
           ls
           git archive -o ${{ github.event.repository.name }}-${{ github.ref_name }}.zip --prefix ${{ github.event.repository.name }}/ $stashName 
