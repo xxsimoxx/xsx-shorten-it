@@ -8,8 +8,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-      - uses: actions/checkout@v4
-      - uses: php-actions/composer@v6
+        uses: actions/checkout@v4
+      - name: Install deps
+        run: |
+          composer install
       - name: setup git config
         run: |
           git config user.name "GitHub Actions Bot"
