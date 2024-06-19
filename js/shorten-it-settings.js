@@ -25,4 +25,3 @@ function xsi_cancel() {
 function xsi_help() {
 	document.getElementById('contextual-help-link').click();
 }
-

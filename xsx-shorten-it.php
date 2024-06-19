@@ -24,10 +24,13 @@
 
 namespace XXSimoXX\ShortenIt;
 
+require_once 'traits/Helpers.trait.php';
 require_once 'vendor/autoload.php';
 use splitbrain\phpQRCode\QRCode;
 
 class ShortenIt {
+
+	use Helpers;
 
 	private $options = false;
 	private $screen  = '';
@@ -145,7 +148,7 @@ class ShortenIt {
 	public function render_menu () {
 
 		echo '<div class="wrap">';
-		$this->display_notices();
+		$this->display_notices('xsx_short_it_notices');
 		echo '<div class="xsi xsi-general">';
 		echo '<h1>'.esc_html__('Short It', 'xsx-short-it').'</h1>';
 		echo '<p>'.esc_html__('Create short link for your posts, your affiliates or your social content.', 'xsx-short-it').'<br>';
@@ -207,38 +210,9 @@ echo '<a href="#" class="link-txt">ciao</a>';
 		wp_enqueue_style(self::SLUG.'-css', plugin_dir_url(__FILE__).'css/shorten-it-settings.css', [], '0.0.2');
 	}
 
-	private function add_notice($message, $failure = false) {
-		$other_notices = get_transient('xsx_short_it_notices');
-		$notice = $other_notices === false ? '' : $other_notices;
-		$failure_style = $failure ? 'notice-error' : 'notice-success';
-		$notice .= '<div class="notice '.$failure_style.' is-dismissible">';
-		$notice .= '    <p>'.wp_kses($message, ['br' => [], 'i' => [],]).'</p>';
-		$notice .= '</div>';
-		set_transient('xsx_short_it_notices', $notice, \HOUR_IN_SECONDS);
-	}
-
-	private function display_notices() {
-		$notices = get_transient('xsx_short_it_notices');
-		if ($notices === false) {
-			return;
-		}
-		// This contains html formatted from 'add_notice' function that uses 'wp_kses'.
-		echo $notices; //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		delete_transient('xsx_short_it_notices');
-	}
-
 	public function new_action() {
 
-		if (!isset($_GET['action'])) {
-			return;
-		}
-		if ($_GET['action'] !== 'new') {
-			return;
-		}
-		if (!check_admin_referer('new', '_xsi')) {
-			return;
-		}
-		if (!current_user_can('manage_options')) {
+		if ($this->before_action_checks('new') !== true) {
 			return;
 		}
 		$missing = [];
@@ -266,7 +240,7 @@ echo '<a href="#" class="link-txt">ciao</a>';
 		$path = preg_replace('#[^A-Za-z0-9/\-\._]#', '', $path);
 		if ($missing !== []) {
 			$error = sprintf(esc_html__('Missing %s.', 'xsx-short-it'), implode(', ', $missing));
-			$this->add_notice($error, true);
+			$this->add_notice('xsx_short_it_notices', $error, true);
 			$sendback = remove_query_arg(['action', '_xuc'], wp_get_referer());
 			wp_safe_redirect($sendback);
 			exit;
@@ -283,7 +257,7 @@ echo '<a href="#" class="link-txt">ciao</a>';
 			];
 
 		$this->save_options();
-		$this->add_notice(esc_html__('New short URL generated.', 'xsx-short-it'), false);
+		$this->add_notice('xsx_short_it_notices', esc_html__('New short URL generated.', 'xsx-short-it'), false);
 
 		$sendback = remove_query_arg(['action', '_xuc'], wp_get_referer());
 		wp_safe_redirect($sendback);
@@ -293,16 +267,7 @@ echo '<a href="#" class="link-txt">ciao</a>';
 
 	public function delete_action() {
 
-		if (!isset($_GET['action'])) {
-			return;
-		}
-		if ($_GET['action'] !== 'delete') {
-			return;
-		}
-		if (!check_admin_referer('delete', '_xsi')) {
-			return;
-		}
-		if (!current_user_can('manage_options')) {
+		if ($this->before_action_checks('delete') !== true) {
 			return;
 		}
 		if (!isset($_REQUEST['path'])) {
@@ -315,7 +280,7 @@ echo '<a href="#" class="link-txt">ciao</a>';
 		unset($this->options['paths'][$path]);
 
 		$this->save_options();
-		$this->add_notice(esc_html__('Path deleted.', 'xsx-short-it').'<br><i>'.$path.'</i>', false);
+		$this->add_notice('xsx_short_it_notices', esc_html__('Path deleted.', 'xsx-short-it').'<br><i>'.$path.'</i>', false);
 
 		$sendback = remove_query_arg(['action', 'path', '_xsi'], wp_get_referer());
 		wp_safe_redirect($sendback);
@@ -325,16 +290,7 @@ echo '<a href="#" class="link-txt">ciao</a>';
 
 	public function zero_action() {
 
-		if (!isset($_GET['action'])) {
-			return;
-		}
-		if ($_GET['action'] !== 'zero') {
-			return;
-		}
-		if (!check_admin_referer('zero', '_xsi')) {
-			return;
-		}
-		if (!current_user_can('manage_options')) {
+		if ($this->before_action_checks('zero') !== true) {
 			return;
 		}
 		if (!isset($_REQUEST['path'])) {
@@ -347,7 +303,7 @@ echo '<a href="#" class="link-txt">ciao</a>';
 		$this->options['paths'][$path]['hits'] = 0;
 
 		$this->save_options();
-		$this->add_notice(esc_html__('Hits cleared.', 'xsx-short-it').'<br><i>'.$path.'</i>', false);
+		$this->add_notice('xsx_short_it_notices', esc_html__('Hits cleared.', 'xsx-short-it').'<br><i>'.$path.'</i>', false);
 
 		$sendback = remove_query_arg(['action', 'path', '_xsi'], wp_get_referer());
 		wp_safe_redirect($sendback);
@@ -357,16 +313,7 @@ echo '<a href="#" class="link-txt">ciao</a>';
 
 	public function qr_action() {
 
-		if (!isset($_GET['action'])) {
-			return;
-		}
-		if ($_GET['action'] !== 'qr') {
-			return;
-		}
-		if (!check_admin_referer('qr', '_xsi')) {
-			return;
-		}
-		if (!current_user_can('manage_options')) {
+		if ($this->before_action_checks('qr') !== true) {
 			return;
 		}
 		if (!isset($_REQUEST['path'])) {
