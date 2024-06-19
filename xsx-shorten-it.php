@@ -210,10 +210,12 @@ echo '<a href="#" class="link-txt">ciao</a>';
 		wp_enqueue_style(self::SLUG.'-css', plugin_dir_url(__FILE__).'css/shorten-it-settings.css', [], '0.0.2');
 	}
 
+	// phpcs:disable WordPress.Security.NonceVerification.Recommended
+	// Nonces are verified by "before_action_checks!
 	public function new_action() {
 
 		if ($this->before_action_checks('new') !== true) {
-			return;
+			return; // Nonce is verified here
 		}
 		$missing = [];
 		if (!isset($_REQUEST['new_path']) || $_REQUEST['new_path'] === '') {
@@ -231,7 +233,7 @@ echo '<a href="#" class="link-txt">ciao</a>';
 		$dest = esc_url_raw(wp_unslash($_REQUEST['new_dest']));
 		$code = (int) sanitize_text_field(wp_unslash($_REQUEST['new_code']));
 
-		if ($dest !== wp_unslash($_REQUEST['new_dest'])) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		if ($dest !== wp_unslash($_REQUEST['new_dest'])) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			$missing[] = esc_html__('valid destination', 'xsx-short-it');
 		}
 		if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
@@ -331,6 +333,7 @@ echo '<a href="#" class="link-txt">ciao</a>';
 		echo $qr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 
 	}
+	// phpcs:enable
 
 	public function maybe_redirect() {
 		if (defined('WP_CLI') && WP_CLI) {
