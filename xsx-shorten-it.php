@@ -4,7 +4,7 @@
  * -----------------------------------------------------------------------------
  * Plugin Name: Shorten It
  * Description: Create short link for your posts, your affiliates or your social content.
- * Version: 1.1.0
+ * Version: 1.1.1
  * Requires PHP: 7.4
  * Requires CP: 2.0
  * Author: Simone Fioravanti
