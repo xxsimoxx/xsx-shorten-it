@@ -1,1 +1,14 @@
+.qr-modal #dialog-close-button {
+	border-left: 2px solid #000;
+	border-bottom: 2px solid #000;
+}
 
+.qr-modal #dialog-close-button:hover,
+.qr-modal #dialog-close-button:focus {
+	background-color: #fafafa;
+}
+
+.qr-modal #dialog-close-button::before {
+	content: "\f335";
+	font: normal 40px / 49px dashicons;
+}

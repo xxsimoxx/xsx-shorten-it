@@ -4,7 +4,7 @@
  * -----------------------------------------------------------------------------
  * Plugin Name: Shorten It
  * Description: Create short link for your posts, your affiliates or your social content.
- * Version: 1.0.1
+ * Version: 1.1.0
  * Requires PHP: 7.4
  * Requires CP: 2.0
  * Author: Simone Fioravanti
@@ -41,6 +41,7 @@ class ShortenIt {
 		add_action('admin_menu',            [$this, 'create_settings_menu'], 100);
 		add_action('admin_enqueue_scripts', [$this, 'scripts']);
 		add_action('admin_enqueue_scripts', [$this, 'styles']);
+		add_action('wp_ajax_xsiqr',         [$this, 'ajax_callback']);
 		register_uninstall_hook(__FILE__, [__CLASS__, 'uninstall']);
 	}
 
@@ -104,7 +105,7 @@ class ShortenIt {
 			Destination: %1$s<br>
 			means that if you connect to <i>%2$s</i> you will be redirected to <i>%1$s</i>.', 'xsx-short-it'),
 			'https://www.facebook.com/cris.vardamak/videos/1327994840668572',
-			get_bloginfo('url').'/fbv',
+			get_bloginfo('url').'/fbv'
 		);
 		$example_content = wp_kses($example_content, ['br' => [], 'i' => []]);
 
@@ -183,8 +184,8 @@ class ShortenIt {
 		echo '<input type="button" class="button" onclick="xsi_cancel();" id="cancel_button" style="visibility: hidden;" value="'.esc_html__('Cancel', 'xsx-short-it').'"></input>';
 		echo '</form>';
 		echo '</div>';
-echo '<a href="#" class="link-txt">ciao</a>';
 		echo '</div>';
+		echo '<dialog class="qr-modal" id="qr-modal"></dialog>';
 
 	}
 
@@ -201,6 +202,37 @@ echo '<a href="#" class="link-txt">ciao</a>';
 				'edit' => esc_html__('Edit short link', 'xsx-short-it'),
 			]
 		);
+
+		wp_localize_script(
+			self::SLUG.'-js',
+			'xsiQR',
+			[
+				'url'   => admin_url('admin-ajax.php'),
+				'nonce' => wp_create_nonce('xsxsiqr-ajax-nonce'),
+				'close' => esc_html__('Close'), // phpcs:ignore WordPress.WP.I18n.MissingArgDomain
+			]
+		);
+	}
+
+	public function ajax_callback() {
+
+		if (!isset($_REQUEST['nonce'])) {
+			die('Missing nonce.');
+		}
+		if (!wp_verify_nonce(sanitize_key(wp_unslash($_REQUEST['nonce'])), 'xsxsiqr-ajax-nonce')) {
+			die('Nonce error.');
+		}
+		if (!isset($_REQUEST['qr'])) {
+			die('Missing QR link.');
+		}
+		$response = [
+			'status' => true,
+			'qr'     => QRCode::svg(esc_url_raw(wp_unslash($_REQUEST['qr']))),
+			'title'  => esc_url_raw(wp_unslash($_REQUEST['qr'])),
+		];
+		echo wp_json_encode($response);
+		wp_die();
+
 	}
 
 	public function styles($hook) {
@@ -211,7 +243,7 @@ echo '<a href="#" class="link-txt">ciao</a>';
 	}
 
 	// phpcs:disable WordPress.Security.NonceVerification.Recommended
-	// Nonces are verified by "before_action_checks!
+	// Nonces are verified by "before_action_checks"
 	public function new_action() {
 
 		if ($this->before_action_checks('new') !== true) {
@@ -397,11 +429,12 @@ class ShortItListTable extends \WP_List_Table {
 	public function column_path($item) {
 		$url = esc_url_raw(get_bloginfo('url').(str_starts_with($item['path'], '/') ? '' : '/').$item['path']);
 		$actions = [
-			'delete' => '<a href="'.wp_nonce_url(add_query_arg(['action' => 'delete', 'path' => $item['path']]), 'delete', '_xsi').'">'.esc_html__('Delete', 'xsx-short-it').'</a>',
-			'edit'   => '<a href="#xsi-form" onclick="xsi_mod(\''.$item['path'].'\', \''.$item['dest'].'\', \''.$item['code'].'\');">'.esc_html__('Edit', 'xsx-short-it').'</a>',
-			'reset'  => '<a href="'.wp_nonce_url(add_query_arg(['action' => 'zero', 'path' => $item['path']]), 'zero', '_xsi').'">'.esc_html__('Reset count', 'xsx-short-it').'</a>',
-			'copy'   => '<a href="#" onclick="xsi_copy(\''.$url.'\')">'.esc_html__('Copy URL to clipboard', 'xsx-short-it').'</a>',
-			'qr'     => '<a href="'.wp_nonce_url(add_query_arg(['action' => 'qr', 'path' => $item['path']]), 'qr', '_xsi').'">'.esc_html__('Download QR', 'xsx-short-it').'</a>',
+			'delete'  => '<a href="'.wp_nonce_url(add_query_arg(['action' => 'delete', 'path' => $item['path']]), 'delete', '_xsi').'">'.esc_html__('Delete', 'xsx-short-it').'</a>',
+			'edit'    => '<a href="#xsi-form" onclick="xsi_mod(\''.$item['path'].'\', \''.$item['dest'].'\', \''.$item['code'].'\');">'.esc_html__('Edit', 'xsx-short-it').'</a>',
+			'reset'   => '<a href="'.wp_nonce_url(add_query_arg(['action' => 'zero', 'path' => $item['path']]), 'zero', '_xsi').'">'.esc_html__('Reset count', 'xsx-short-it').'</a>',
+			'copy'    => '<a href="#" onclick="xsi_copy(\''.$url.'\')">'.esc_html__('Copy URL to clipboard', 'xsx-short-it').'</a>',
+			'qr'      => '<a href="'.wp_nonce_url(add_query_arg(['action' => 'qr', 'path' => $item['path']]), 'qr', '_xsi').'">'.esc_html__('Download QR', 'xsx-short-it').'</a>',
+			'viewqr'  => '<a href="#" onclick="xsi_get_qr(\''.$url.'\')">'.esc_html__('View QR', 'xsx-short-it').'</a>',
 		];
 		$key = '<span class="row-title">'.$item['path'].'</span>';
 		return sprintf('%1$s %2$s', $key, $this->row_actions($actions));
