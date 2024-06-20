@@ -363,6 +363,7 @@ class ShortenIt {
 		header('Content-Disposition: attachment; filename='.str_replace('/', '-', $path).'.svg');
 		header('Content-Length: '.strlen($qr));
 		echo $qr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		exit;
 
 	}
 	// phpcs:enable
